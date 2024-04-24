@@ -1,81 +1,92 @@
 
 
-Convolutional neural network (CNN). Use MNIST Fashion Dataset and create a classifier to classify fashion clothing into categories.
-
-    import numpy as np
     from tensorflow.keras.datasets import fashion_mnist
-    from tensorflow.keras.models import Sequential
-    from tensorflow.keras.layers import Dense, Flatten, MaxPooling2D, Conv2D
-    import matplotlib.pyplot as plt
+    import numpy as np
 
-    # Load and preprocess the data
     (train_x, train_y), (test_x, test_y) = fashion_mnist.load_data()
-    train_x, test_x = train_x / 255.0, test_x / 255.0
 
     Downloading data from https://storage.googleapis.com/tensorflow/tf-keras-datasets/train-labels-idx1-ubyte.gz
-    29515/29515 ━━━━━━━━━━━━━━━━━━━━ 0s 0us/step
+    29515/29515 ━━━━━━━━━━━━━━━━━━━━ 0s 1us/step
     Downloading data from https://storage.googleapis.com/tensorflow/tf-keras-datasets/train-images-idx3-ubyte.gz
-    26421880/26421880 ━━━━━━━━━━━━━━━━━━━━ 4s 0us/step
+    26421880/26421880 ━━━━━━━━━━━━━━━━━━━━ 5s 0us/step
     Downloading data from https://storage.googleapis.com/tensorflow/tf-keras-datasets/t10k-labels-idx1-ubyte.gz
     5148/5148 ━━━━━━━━━━━━━━━━━━━━ 0s 1us/step
     Downloading data from https://storage.googleapis.com/tensorflow/tf-keras-datasets/t10k-images-idx3-ubyte.gz
-    4422102/4422102 ━━━━━━━━━━━━━━━━━━━━ 0s 0us/step
+    4422102/4422102 ━━━━━━━━━━━━━━━━━━━━ 1s 0us/step
 
-    # Define the model
+    from tensorflow.keras.models import Sequential
+    from tensorflow.keras.layers import Dense, Flatten, MaxPooling2D, Conv2D
+
     model = Sequential()
-    model.add(Conv2D(filters=64, kernel_size=(3,3), activation='relu', input_shape=(28, 28, 1)))
+
+    model.add(Conv2D(filters=64,kernel_size=(3,3),activation='relu',input_shape=(28, 28, 1)))
+
+    # Adding maxpooling layer to get max value within a matrix
     model.add(MaxPooling2D(pool_size=(2,2)))
+
     model.add(Flatten())
-    model.add(Dense(128, activation="relu"))
-    model.add(Dense(10, activation="softmax"))
+    model.add(Dense(128, activation = "relu"))
+    model.add(Dense(10, activation = "softmax"))
 
-    C:\Python\lib\site-packages\keras\src\layers\convolutional\base_conv.py:107: UserWarning: Do not pass an `input_shape`/`input_dim` argument to a layer. When using Sequential models, prefer using an `Input(shape)` object as the first layer in the model instead.
-      super().__init__(activity_regularizer=activity_regularizer, **kwargs)
+    /opt/anaconda3/lib/python3.11/site-packages/keras/src/layers/convolutional/base_conv.py:99: UserWarning: Do not pass an `input_shape`/`input_dim` argument to a layer. When using Sequential models, prefer using an `Input(shape)` object as the first layer in the model instead.
+      super().__init__(
 
-    # Compile the model
-    model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+    model.summary()
 
-    # Train the model
-    model.fit(train_x.reshape(-1, 28, 28, 1), train_y, epochs=5, validation_split=0.2)
+    Model: "sequential"
+
+    ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━┓
+    ┃ Layer (type)                    ┃ Output Shape           ┃       Param # ┃
+    ┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━┩
+    │ conv2d (Conv2D)                 │ (None, 26, 26, 64)     │           640 │
+    ├─────────────────────────────────┼────────────────────────┼───────────────┤
+    │ max_pooling2d (MaxPooling2D)    │ (None, 13, 13, 64)     │             0 │
+    ├─────────────────────────────────┼────────────────────────┼───────────────┤
+    │ flatten (Flatten)               │ (None, 10816)          │             0 │
+    ├─────────────────────────────────┼────────────────────────┼───────────────┤
+    │ dense (Dense)                   │ (None, 128)            │     1,384,576 │
+    ├─────────────────────────────────┼────────────────────────┼───────────────┤
+    │ dense_1 (Dense)                 │ (None, 10)             │         1,290 │
+    └─────────────────────────────────┴────────────────────────┴───────────────┘
+
+     Total params: 1,386,506 (5.29 MB)
+
+     Trainable params: 1,386,506 (5.29 MB)
+
+     Non-trainable params: 0 (0.00 B)
+
+    model.compile(optimizer = 'adam', loss = 'sparse_categorical_crossentropy', metrics = ['accuracy'])
+
+    model.fit(train_x.astype(np.float32), train_y.astype(np.float32), epochs = 5, validation_split = 0.2)
 
     Epoch 1/5
-    1500/1500 ━━━━━━━━━━━━━━━━━━━━ 45s 28ms/step - accuracy: 0.8149 - loss: 0.5227 - val_accuracy: 0.8882 - val_loss: 0.3130
+    1500/1500 ━━━━━━━━━━━━━━━━━━━━ 15s 10ms/step - accuracy: 0.7903 - loss: 5.1516 - val_accuracy: 0.8782 - val_loss: 0.3526
     Epoch 2/5
-    1500/1500 ━━━━━━━━━━━━━━━━━━━━ 43s 29ms/step - accuracy: 0.9034 - loss: 0.2755 - val_accuracy: 0.9087 - val_loss: 0.2599
+    1500/1500 ━━━━━━━━━━━━━━━━━━━━ 15s 10ms/step - accuracy: 0.8972 - loss: 0.2902 - val_accuracy: 0.8907 - val_loss: 0.3112
     Epoch 3/5
-    1500/1500 ━━━━━━━━━━━━━━━━━━━━ 43s 28ms/step - accuracy: 0.9203 - loss: 0.2154 - val_accuracy: 0.9010 - val_loss: 0.2875
-    Epoch 4/5
-    1500/1500 ━━━━━━━━━━━━━━━━━━━━ 43s 29ms/step - accuracy: 0.9321 - loss: 0.1810 - val_accuracy: 0.9154 - val_loss: 0.2382
-    Epoch 5/5
-    1500/1500 ━━━━━━━━━━━━━━━━━━━━ 43s 28ms/step - accuracy: 0.9448 - loss: 0.1499 - val_accuracy: 0.9125 - val_loss: 0.2494
+     943/1500 ━━━━━━━━━━━━━━━━━━━━ 5s 9ms/step - accuracy: 0.9145 - loss: 0.2372
 
-    <keras.src.callbacks.history.History at 0x1fe82056c50>
+    loss, acc = model.evaluate(test_x, test_y)
 
-    # Evaluate the model
-    loss, acc = model.evaluate(test_x.reshape(-1, 28, 28, 1), test_y)
-    print("Test Loss:", loss)
-    print("Test Accuracy:", acc)
+    313/313 [==============================] - 1s 2ms/step - loss: 0.5724 - accuracy: 0.8171
 
-    313/313 ━━━━━━━━━━━━━━━━━━━━ 2s 6ms/step - accuracy: 0.9031 - loss: 0.2751
-    Test Loss: 0.26659059524536133
-    Test Accuracy: 0.9067000150680542
+    labels = ['t_shirt', 'trouser', 'pullover', 'dress', 'coat', 'sandal', 'shirt', 'sneaker',   'bag', 'ankle_boots']
 
-    # Define labels
-    labels = ['t_shirt', 'trouser', 'pullover', 'dress', 'coat', 'sandal', 'shirt', 'sneaker', 'bag', 'ankle_boots']
-
-    # Make predictions
     predictions = model.predict(test_x[:1])
 
-    1/1 ━━━━━━━━━━━━━━━━━━━━ 0s 147ms/step
+    1/1 [==============================] - 0s 73ms/step
 
-    # Get predicted label
+    import numpy as np
+
     label = labels[np.argmax(predictions)]
 
-    # Plot the image
-    print("Predicted Label:", label)
-    plt.imshow(test_x[0], cmap='gray')
-    plt.show()
+    import matplotlib.pyplot as plt
+    print(label)
+    plt.imshow(test_x[:1][0])
+    plt.show
 
-    Predicted Label: ankle_boots
+    ankle_boots
+
+    <function matplotlib.pyplot.show(close=None, block=None)>
 
 []
