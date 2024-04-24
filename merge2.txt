@@ -1,0 +1,178 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <chrono>
+#include <omp.h>
+
+using namespace std;
+
+// Function to merge two sorted subarrays
+void merge(vector<int> &arr, int left, int mid, int right)
+{
+    int n1 = mid - left + 1;
+    int n2 = right - mid;
+
+    vector<int> L(n1), R(n2);
+
+    for (int i = 0; i < n1; ++i)
+        L[i] = arr[left + i];
+    for (int j = 0; j < n2; ++j)
+        R[j] = arr[mid + 1 + j];
+
+    int i = 0, j = 0, k = left;
+
+    while (i < n1 && j < n2)
+    {
+        if (L[i] <= R[j])
+        {
+            arr[k] = L[i];
+            ++i;
+        }
+        else
+        {
+            arr[k] = R[j];
+            ++j;
+        }
+        ++k;
+    }
+
+    while (i < n1)
+    {
+        arr[k] = L[i];
+        ++i;
+        ++k;
+    }
+
+    while (j < n2)
+    {
+        arr[k] = R[j];
+        ++j;
+        ++k;
+    }
+}
+
+// Sequential merge sort
+void mergeSortSequential(vector<int> &arr, int left, int right)
+{
+    if (left < right)
+    {
+        int mid = left + (right - left) / 2;
+        mergeSortSequential(arr, left, mid);
+        mergeSortSequential(arr, mid + 1, right);
+        merge(arr, left, mid, right);
+    }
+}
+
+// Parallel merge sort
+void mergeSortParallel(vector<int> &arr, int left, int right)
+{
+    if (left < right)
+    {
+        int mid = left + (right - left) / 2;
+#pragma omp parallel sections
+        {
+#pragma omp section
+            mergeSortParallel(arr, left, mid);
+#pragma omp section
+            mergeSortParallel(arr, mid + 1, right);
+        }
+        merge(arr, left, mid, right);
+    }
+}
+
+int main()
+{
+
+    int size = 10000;
+    vector<int> arr(size);
+
+    // for (int i = 0, j = size; i < size; i++, j--)
+    // {
+    //     arr[i] = j;
+    // }
+    
+    vector<int> vec = {2,1,9,4,3,5};
+
+    auto start = chrono::high_resolution_clock::now();
+    mergeSortSequential(vec, 0, 5);
+    auto end = chrono::high_resolution_clock::now();
+    chrono::duration<double> seq_time = end - start;
+    cout << seq_time.count() << " " << endl;
+
+    vector<int> arr_parr(size);
+
+    // for (int i = 0, j = size; i < size; i++, j--)
+    // {
+    //     arr_parr[i] = j;
+    // }
+
+    start = chrono::high_resolution_clock::now();
+    mergeSortParallel(vec, 0, 5);
+    end = chrono::high_resolution_clock::now();
+    chrono::duration<double> par_time = end - start;
+    cout << par_time.count() << endl;
+
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+This C++ code demonstrates sequential and parallel implementations of the merge sort algorithm using OpenMP for parallelization. Let's break it down:
+
+Header Files:
+cpp
+Copy code
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <chrono>
+#include <omp.h>
+iostream: Input/output operations.
+vector: Standard library container used for dynamic arrays.
+algorithm: Included for std::merge() function used in merge sort.
+chrono: Library for timing execution.
+omp.h: OpenMP library for parallel programming.
+Namespace:
+cpp
+Copy code
+using namespace std;
+Allows using names from the std namespace without prefixing them with std::.
+Merge Function:
+cpp
+Copy code
+void merge(vector<int> &arr, int left, int mid, int right)
+Merges two sorted subarrays arr[left...mid] and arr[mid+1...right].
+Sequential Merge Sort Function:
+cpp
+Copy code
+void mergeSortSequential(vector<int> &arr, int left, int right)
+Implements the merge sort algorithm sequentially.
+Parallel Merge Sort Function:
+cpp
+Copy code
+void mergeSortParallel(vector<int> &arr, int left, int right)
+Implements the merge sort algorithm in parallel using OpenMP.
+Divides the array into two halves and sorts each half in parallel using OpenMP sections.
+Main Function:
+Initializes a vector vec with some integers.
+Calls mergeSortSequential and mergeSortParallel functions to sort vec.
+Measures the execution time of both sequential and parallel merge sort implementations using chrono library.
+Timing:
+The chrono library is used to measure the time taken by each sorting method.
+Execution times of both sequential and parallel merge sort implementations are printed.
+OpenMP Parallelization:
+OpenMP is utilized to parallelize the merge sort algorithm.
+Parallel sections are used to divide the work between threads.
+In the parallel version, the array is divided into two halves, each half being sorted in parallel.
+Overall, this code demonstrates how to implement merge sort both sequentially and in parallel using OpenMP, and it compares the execution times of the two implementations.*/

@@ -1,0 +1,124 @@
+############ Boston ###############
+
+Data Loading and Exploration:
+The code loads the dataset from a CSV file using pd.read_csv() from the Pandas library.
+Initial exploration includes methods like head(), columns, shape, isnull().sum(), describe(), and info() to understand the structure, statistics, and missing values in the dataset.
+Data Preprocessing:
+Features (x) and target (y) are separated using drop() and slicing operations.
+Standardization of features is performed using StandardScaler() from the sklearn.preprocessing module to bring the features to the same scale.
+Data Splitting:
+The dataset is split into training and testing sets using train_test_split() from sklearn.model_selection. This step ensures the model's performance is evaluated on unseen data.
+Neural Network Model Architecture:
+The neural network model is defined using the Sequential API from Keras, allowing stacking layers sequentially.
+The model consists of dense (fully connected) layers added using add().
+Each layer has a specified number of neurons and activation function, such as ReLU ('relu').
+Model Compilation:
+The model is compiled using compile(), where the optimizer ('adam'), loss function ('mean_squared_error'), and metrics (['mean_absolute_error']) are specified.
+Optimizer: Adam is an efficient optimization algorithm widely used in training neural networks.
+Loss function: Mean Squared Error (MSE) is used for regression tasks.
+Metrics: Mean Absolute Error (MAE) is chosen as a metric to monitor during training.
+Model Training:
+The model is trained using fit() method, specifying training data (X_train, Y_train), number of epochs, batch size, and validation data (X_test, Y_test).
+Model Evaluation:
+The trained model is evaluated on the testing data using evaluate() method, providing the testing features and targets.
+Model Prediction:
+Predictions are made on the testing data using predict() method.
+Performance Metrics Calculation:
+Performance metrics such as MSE, MAE, RMSE, and R-squared are calculated using functions from sklearn.metrics module.
+These metrics quantify how well the model is performing on unseen data.
+Printing Performance Metrics:
+Finally, the calculated performance metrics are printed to assess the model's performance quantitatively.
+Overall, the code demonstrates the end-to-end process of building, training, evaluating, and using a neural network model for regression tasks, along with the calculation of relevant performance metrics. It emphasizes the importance of data preprocessing, model architecture design, and performance evaluation in machine learning workflows.
+
+
+
+
+
+
+############# Fashion ########
+
+This code implements a Convolutional Neural Network (CNN) using TensorFlow/Keras to classify fashion images from the Fashion MNIST dataset. Let's break down the concepts used in the code:
+
+Importing Libraries:
+numpy: For numerical operations.
+tensorflow.keras.datasets: Provides access to the Fashion MNIST dataset.
+tensorflow.keras.models.Sequential: To create a sequential model.
+tensorflow.keras.layers: Provides layers for building the neural network.
+matplotlib.pyplot: For data visualization.
+Loading and Preprocessing Data:
+Data is loaded using fashion_mnist.load_data().
+Pixel values are normalized to the range [0, 1] by dividing by 255.0.
+Defining the Model:
+The model architecture is defined using Sequential API.
+It consists of:
+Conv2D layer: Performs 2D convolution on input images, extracting features using 64 filters and ReLU activation.
+MaxPooling2D layer: Performs max pooling to reduce spatial dimensions.
+Flatten layer: Flattens the input into a 1D array.
+Dense layers: Fully connected layers with 128 neurons (ReLU activation) and 10 neurons (softmax activation) representing the output classes.
+The input shape is specified as (28, 28, 1), where 1 indicates a single channel (grayscale).
+Compiling the Model:
+The model is compiled using compile() method.
+Optimizer: Adam optimizer, which adapts learning rates during training.
+Loss function: Sparse categorical crossentropy, suitable for integer-encoded target labels.
+Metrics: Accuracy is used as the evaluation metric.
+Training the Model:
+The model is trained using fit() method on training data.
+train_x and test_x are reshaped to include a single channel (grayscale).
+Evaluating the Model:
+Model performance is evaluated on the test data using evaluate() method.
+Test loss and accuracy are printed.
+Defining Labels:
+Labels for different fashion categories are defined.
+Making Predictions:
+Predictions are made using predict() method on the first test image.
+The predicted label is obtained by finding the index of the maximum probability and mapping it to the corresponding label.
+Plotting Images:
+The original image is displayed using plt.imshow() from Matplotlib.
+The code showcases the entire pipeline of building, training, evaluating, and using a CNN for image classification tasks using TensorFlow and Keras. It leverages fundamental concepts such as convolutional layers, pooling layers, fully connected layers, normalization, and softmax activation for multi-class classification.
+
+
+
+
+
+
+########### IMDB movie review ################
+
+This Python code utilizes Keras to implement a neural network for binary text classification on the IMDb movie review dataset. Let's break down the concepts used in the code:
+
+Importing Libraries:
+numpy: For numerical operations.
+keras.datasets.imdb: Provides access to the IMDb dataset.
+keras.models: For creating a neural network model.
+keras.layers: Provides layers for building the neural network.
+Loading the Dataset:
+The IMDb dataset is loaded using imdb.load_data(num_words=10000). Setting num_words to 10000 keeps only the top 10,000 most frequently occurring words in the training data, reducing the vocabulary size.
+Preprocessing the Data:
+The vectorize_sequences function converts sequences of word indices into a binary matrix representation.
+Each review is converted into a 10,000-dimensional vector where each index corresponds to a word in the vocabulary. If the word is present in the review, its corresponding index is set to 1, otherwise 0.
+Training and test labels are converted to numpy arrays and cast to float32.
+Defining the Model:
+The neural network model is defined using the Sequential API.
+It consists of:
+Two Dense layers with 16 units and ReLU activation function.
+The output layer with 1 unit and sigmoid activation function, which outputs a probability indicating the likelihood of a positive review.
+The input shape is specified as (10000,) since each review is represented as a 10,000-dimensional vector.
+Compiling the Model:
+The model is compiled using compile() method.
+Optimizer: RMSprop optimizer is used.
+Loss function: Binary crossentropy, suitable for binary classification tasks.
+Metrics: Accuracy is used as the evaluation metric.
+Validation Set:
+A validation set is created by splitting a portion of the training data.
+Training the Model:
+The model is trained using fit() method on partial training data.
+Number of epochs is set to 20, and batch size to 512.
+Evaluating the Model:
+Model performance is evaluated on the test data using evaluate() method.
+Test loss and accuracy are printed.
+Overall, this code demonstrates how to build, train, and evaluate a simple neural network model for binary text classification using Keras. It showcases key concepts such as vectorization of text data, model architecture design, model compilation, training, validation, and evaluation.
+
+
+
+
+
+

@@ -1,0 +1,125 @@
+#include <iostream>
+#include <chrono>
+#include <omp.h>
+
+using namespace std;
+
+void bubble(int array[], int n)
+{
+    for (int i = 0; i < n - 1; i++)
+    {
+        for (int j = 0; j < n - i - 1; j++)
+        {
+            if (array[j] > array[j + 1])
+                swap(array[j], array[j + 1]);
+        }
+    }
+}
+
+void pBubble(int array[], int n)
+{
+    // Sort odd indexed numbers
+    for (int i = 0; i < n; ++i)
+    {
+#pragma omp for
+        for (int j = 1; j < n; j += 2)
+        {
+            if (array[j] < array[j - 1])
+            {
+                swap(array[j], array[j - 1]);
+            }
+        }
+
+// Synchronize
+#pragma omp barrier
+
+// Sort even indexed numbers
+#pragma omp for
+        for (int j = 2; j < n; j += 2)
+        {
+            if (array[j] < array[j - 1])
+            {
+                swap(array[j], array[j - 1]);
+            }
+        }
+    }
+}
+
+
+
+int main()
+{
+    // Set up variables
+    const int n = 10000;
+    int arr[n];
+    int brr[n];
+    double start_time, end_time;
+
+    // Create an array with numbers starting from n to 1
+    // for (int i = 0, j = n; i < n; i++, j--)
+    //     arr[i] = j;
+    
+    int vec[6] = {4, 1, 6, 2, 9, 3};
+
+    // Sequential time
+    auto start = chrono::high_resolution_clock::now();
+    bubble(vec, n);
+    auto end = chrono::high_resolution_clock::now();
+    chrono::duration<double> seq_time = end - start;
+    cout << seq_time.count() << " " << endl;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*This C++ code demonstrates two versions of the bubble sort algorithm: a sequential implementation (bubble) and a parallel implementation (pBubble) using OpenMP. Here's an explanation:
+
+Header Files:
+cpp
+Copy code
+#include <iostream>
+#include <chrono>
+#include <omp.h>
+iostream: Input/output operations.
+chrono: Library for timing execution.
+omp.h: OpenMP library for parallel programming.
+Namespace:
+cpp
+Copy code
+using namespace std;
+Allows using names from the std namespace without prefixing them with std::.
+Sequential Bubble Sort Function:
+cpp
+Copy code
+void bubble(int array[], int n)
+Implements the bubble sort algorithm sequentially.
+It iterates through the array and swaps adjacent elements if they are in the wrong order, pushing the larger elements towards the end of the array in each iteration.
+Parallel Bubble Sort Function:
+cpp
+Copy code
+void pBubble(int array[], int n)
+Implements the bubble sort algorithm in parallel using OpenMP.
+The array is split into two halves: one for odd-indexed elements and one for even-indexed elements.
+Each half is sorted independently using OpenMP parallel for loops.
+Main Function:
+Initializes an array vec with some integers.
+Measures the execution time of the sequential bubble sort implementation using chrono library.
+Timing:
+The chrono library is used to measure the time taken by the sequential bubble sort implementation.
+Execution time of the sequential bubble sort implementation is printed.
+OpenMP Parallelization:
+OpenMP directives (#pragma omp) are used to parallelize the bubble sort algorithm.
+Parallel sections of the array are sorted independently using OpenMP parallel for loops.
+Overall, this code demonstrates how to implement bubble sort both sequentially and in parallel using OpenMP. It also compares the execution times of the two implementations.*/

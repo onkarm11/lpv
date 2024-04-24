@@ -1,0 +1,78 @@
+#include<iostream>
+#include<omp.h>
+
+using namespace std;
+int minval(int arr[], int n){
+  int minval = arr[0];
+  #pragma omp parallel for reduction(min : minval)
+    for(int i = 0; i < n; i++){
+      if(arr[i] < minval) minval = arr[i];
+    }
+  return minval;
+}
+
+int maxval(int arr[], int n){
+  int maxval = arr[0];
+  #pragma omp parallel for reduction(max : maxval)
+    for(int i = 0; i < n; i++){
+      if(arr[i] > maxval) maxval = arr[i];
+    }
+  return maxval;
+}
+
+int sum(int arr[], int n){
+  int sum = 0;
+  #pragma omp parallel for reduction(+ : sum)
+    for(int i = 0; i < n; i++){
+      sum += arr[i];
+    }
+  return sum;
+}
+
+int average(int arr[], int n){
+  return (double)sum(arr, n) / n;
+}
+
+int main(){
+  int n = 5;
+  int arr[] = {1,2,3,4,5};
+  cout << "The minimum value is: " << minval(arr, n) << '\n';
+  cout << "The maximum value is: " << maxval(arr, n) << '\n';
+  cout << "The summation is: " << sum(arr, n) << '\n';
+  cout << "The average is: " << average(arr, n) << '\n';
+  return 0;
+}
+
+
+
+
+
+
+
+/*This code is written in C++ and utilizes OpenMP (Open Multi-Processing) directives to parallelize the computation of minimum value, maximum value, sum, and average of an array of integers.
+
+Let's break down the code and the concepts used:
+
+Header Files:
+cpp
+Copy code
+#include<iostream>
+#include<omp.h>
+iostream: Included for input and output operations.
+omp.h: Included for using OpenMP directives and functions.
+Namespace:
+cpp
+Copy code
+using namespace std;
+This line allows using names from the std namespace without prefixing them with std::.
+Function Definitions:
+minval, maxval, sum, and average functions are defined to compute the minimum value, maximum value, sum, and average of an array respectively. Each function takes an integer array arr and its size n as input parameters.
+Parallelization with OpenMP:
+OpenMP directives are used to parallelize the loops in each function.
+#pragma omp parallel for is a directive that parallelizes a loop.
+reduction clause specifies that the specified variable(s) should be reduced across threads. In this case, minval, maxval, and sum are being reduced using the min, max, and + operators respectively.
+By using this directive, the iterations of the loop are divided among multiple threads, and each thread computes its part of the result. Then, the results are combined using the reduction operation specified.
+Main Function:
+The main function initializes an array arr with 5 integers (1, 2, 3, 4, 5).
+It then calls the minval, maxval, sum, and average functions to compute and print the minimum value, maximum value, sum, and average of the array respectively.
+Overall, this code demonstrates how to use OpenMP directives to parallelize computations across multiple threads, improving the performance of operations such as finding the minimum value, maximum value, sum, and average of an array.*/
