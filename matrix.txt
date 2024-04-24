@@ -1,0 +1,163 @@
+%%writefile Untitled0.cu
+#include <iostream>
+using namespace std;
+
+
+// CUDA code to multiply matrices
+__global__ void multiply(int* A, int* B, int* C, int size) {
+    // Uses thread indices and block indices to compute each element
+    int row = blockIdx.y * blockDim.y + threadIdx.y;
+    int col = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if (row < size && col < size) {
+        int sum = 0;
+        for (int i = 0; i < size; i++) {
+            sum += A[row * size + i] * B[i * size + col];
+        }
+        C[row * size + col] = sum;
+    }
+}
+
+
+void initialize(int* matrix, int size) {
+    for (int i = 0; i < size * size; i++) {
+        matrix[i] = rand() % 10;
+    }
+}
+
+
+void print(int* matrix, int size) {
+    for (int row = 0; row < size; row++) {
+        for (int col = 0; col < size; col++) {
+            cout << matrix[row * size + col] << " ";
+        }
+        cout << '\n';
+    }
+    cout << '\n';
+}
+
+
+int main() {
+    int* A, * B, * C;
+
+    int N = 2;
+    int blockSize =  16;
+
+    int matrixSize = N * N;
+    size_t matrixBytes = matrixSize * sizeof(int);
+
+    A = new int[matrixSize];
+    B = new int[matrixSize];
+    C = new int[matrixSize];
+
+    initialize(A, N);
+    initialize(B, N);
+    cout << "Matrix A: \n";
+    print(A, N);
+
+    cout << "Matrix B: \n";
+    print(B, N);
+
+    
+    int* X, * Y, * Z;
+    // Allocate space
+    cudaMalloc(&X, matrixBytes);
+    cudaMalloc(&Y, matrixBytes);
+    cudaMalloc(&Z, matrixBytes);
+
+    // Copy values from A to X
+    cudaMemcpy(X, A, matrixBytes, cudaMemcpyHostToDevice);
+    
+    // Copy values from A to X and B to Y
+    cudaMemcpy(Y, B, matrixBytes, cudaMemcpyHostToDevice);
+
+    // Threads per CTA dimension
+    int THREADS = 2;
+
+    // Blocks per grid dimension (assumes THREADS divides N evenly)
+    int BLOCKS = N / THREADS;
+
+    // Use dim3 structs for block  and grid dimensions
+    dim3 threads(THREADS, THREADS);
+    dim3 blocks(BLOCKS, BLOCKS);
+
+    // Launch kernel
+    multiply<<<blocks, threads>>>(X, Y, Z, N);
+
+    cudaMemcpy(C, Z, matrixBytes, cudaMemcpyDeviceToHost);
+    cout << "Multiplication of matrix A and B: \n";
+    print(C, N);
+
+    delete[] A;
+    delete[] B;
+    delete[] C;
+
+    cudaFree(X);
+    cudaFree(Y);
+    cudaFree(Z);
+
+    return 0;
+}
+
+!nvcc Untitled0.cu -o Untitled0
+
+!./Untitled0
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*This C++ code with CUDA performs matrix multiplication using parallel processing on a GPU. Here's an explanation:
+
+Header and Namespace:
+cpp
+Copy code
+#include <iostream>
+using namespace std;
+Includes the necessary header for input/output operations.
+CUDA Kernel:
+cpp
+Copy code
+__global__ void multiply(int* A, int* B, int* C, int size)
+This is a CUDA kernel function that will be executed on the GPU.
+Each thread computes a single element of the resulting matrix C.
+Thread indices and block indices are used to compute the row and column of each element.
+Matrix Initialization and Printing:
+cpp
+Copy code
+void initialize(int* matrix, int size)
+void print(int* matrix, int size)
+initialize() fills a matrix with random values.
+print() prints the contents of a matrix.
+Main Function:
+Defines matrices A, B, and C, and other necessary variables.
+Allocates memory for matrices X, Y, and Z on the GPU using cudaMalloc().
+Copies matrices A and B from host memory to device memory using cudaMemcpy().
+Computes the grid and block dimensions based on the matrix size.
+Launches the CUDA kernel function multiply using <<<blocks, threads>>> syntax.
+Copies the result matrix C from device memory to host memory using cudaMemcpy().
+Prints the result.
+CUDA Compilation and Execution:
+!nvcc Untitled0.cu -o Untitled0: Compiles the CUDA code.
+!./Untitled0: Executes the compiled program.
+CUDA Concepts:
+CUDA is a parallel computing platform and programming model that allows utilizing the power of NVIDIA GPUs for general-purpose computing tasks.
+Kernel functions are executed on the GPU and can be launched with multiple threads.
+Memory management functions (cudaMalloc, cudaMemcpy) are used to allocate memory on the GPU and copy data between host (CPU) and device (GPU) memory.
+The syntax <<<blocks, threads>>> is used to specify the number of blocks and threads per block for kernel execution.
+Overall, this code demonstrates how to perform matrix multiplication using CUDA in a Google Colab environment. It leverages parallel processing on the GPU to accelerate the computation compared to a CPU-based implementation.
+
+
+
+
+
+
+*/

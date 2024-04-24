@@ -1,0 +1,118 @@
+%%writefile Untitled0.cu
+#include <iostream>
+using namespace std;
+
+__global__ void add(int* A, int* B, int* C, int size) {
+    int tid = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if (tid < size) {
+        C[tid] = A[tid] + B[tid];
+    }
+}
+
+
+void initialize(int* vector, int size) {
+    for (int i = 0; i < size; i++) {
+        vector[i] = rand() % 10;
+    }
+}
+
+void print(int* vector, int size) {
+    for (int i = 0; i < size; i++) {
+        cout << vector[i] << " ";
+    }
+    cout << endl;
+}
+
+int main() {
+    int N = 4;
+    int* A, * B, * C;
+
+    int vectorSize = N;
+    size_t vectorBytes = vectorSize * sizeof(int);
+
+    A = new int[vectorSize];
+    B = new int[vectorSize];
+    C = new int[vectorSize];
+
+    initialize(A, vectorSize);
+    initialize(B, vectorSize);
+
+    cout << "Vector A: ";
+    print(A, N);
+    cout << "Vector B: ";
+    print(B, N);
+
+    int* X, * Y, * Z;
+    cudaMalloc(&X, vectorBytes);
+    cudaMalloc(&Y, vectorBytes);
+    cudaMalloc(&Z, vectorBytes);
+
+    cudaMemcpy(X, A, vectorBytes, cudaMemcpyHostToDevice);
+    cudaMemcpy(Y, B, vectorBytes, cudaMemcpyHostToDevice);
+
+    int threadsPerBlock = 256;
+    int blocksPerGrid = (N + threadsPerBlock - 1) / threadsPerBlock;
+
+    add<<<blocksPerGrid, threadsPerBlock>>>(X, Y, Z, N);
+
+    cudaMemcpy(C, Z, vectorBytes, cudaMemcpyDeviceToHost);
+
+    cout << "Addition: ";
+    print(C, N);
+
+    delete[] A;
+    delete[] B;
+    delete[] C;
+
+    cudaFree(X);
+    cudaFree(Y);
+    cudaFree(Z);
+
+    return 0;
+}
+
+!nvcc Untitled0.cu -o Untitled0
+
+!./Untitled0
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*This CUDA C++ code demonstrates vector addition using GPU parallelism. Here's an explanation:
+
+Kernel Function:
+cpp
+Copy code
+__global__ void add(int* A, int* B, int* C, int size)
+This is the kernel function executed on the GPU.
+Each thread is responsible for adding corresponding elements of arrays A and B and storing the result in array C.
+The thread index calculation tid = blockIdx.x * blockDim.x + threadIdx.x ensures that each thread handles a unique element of the arrays.
+Host Functions:
+initialize: Initializes a vector with random values.
+print: Prints the elements of a vector.
+main: The main function initializes two vectors A and B with random values, copies them to the GPU, launches the kernel function for addition, copies the result back to the host, and prints the result.
+Memory Management:
+Memory allocation for vectors A, B, and C is done on both host and device using new and cudaMalloc respectively.
+Data transfer between host and device is achieved using cudaMemcpy.
+CUDA Compilation and Execution:
+!nvcc Untitled0.cu -o Untitled0: Compiles the CUDA code.
+!./Untitled0: Executes the compiled program.
+Concepts:
+CUDA is a parallel computing platform and programming model that allows utilizing the power of NVIDIA GPUs for general-purpose computing tasks.
+Kernel functions are executed on the GPU and can be launched with multiple threads.
+Memory management functions (cudaMalloc, cudaMemcpy) are used to allocate memory on the GPU and copy data between host (CPU) and device (GPU) memory.
+The syntax <<<blocksPerGrid, threadsPerBlock>>> is used to specify the number of blocks and threads per block for kernel execution.
+Overall, this code demonstrates how to perform vector addition using CUDA, taking advantage of GPU parallelism to accelerate computation. Each element-wise addition operation is executed concurrently by multiple threads on the GPU, resulting in significant performance improvements compared to CPU-based sequential execution.*/
