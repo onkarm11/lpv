@@ -1,0 +1,283 @@
+//***********User_Input************
+
+#include<iostream>
+#include<stdlib.h>
+#include<queue>
+using namespace std;
+
+
+class node
+{
+public:
+node *left, *right;
+int data;
+};
+
+
+class Breadthfs
+{
+public:
+node *insert(node *, int);
+void bfs(node *);
+};
+
+
+node *insert(node *root, int data)
+// inserts a node in tree
+{
+if(!root)
+{
+root=new node;
+root->left=NULL;
+root->right=NULL;
+root->data=data;
+return root;
+}
+
+
+queue<node *> q;
+q.push(root);
+while(!q.empty())
+{
+node *temp=q.front();
+q.pop();
+if(temp->left==NULL)
+{
+temp->left=new node;
+temp->left->left=NULL;
+temp->left->right=NULL;
+temp->left->data=data;
+return root;
+}
+else
+{
+q.push(temp->left);
+ }
+ if(temp->right==NULL)
+{
+temp->right=new node;
+temp->right->left=NULL;
+temp->right->right=NULL;
+temp->right->data=data;
+return root;
+}
+else
+{
+q.push(temp->right);
+}
+}
+}
+
+
+void bfs(node *head)
+{
+queue<node*> q;
+q.push(head);
+int qSize;
+while (!q.empty())
+{
+qSize = q.size();
+
+
+#pragma omp parallel for
+//creates parallel threads
+for(int i = 0; i < qSize; i++)
+{
+node* currNode;
+#pragma omp critical
+{
+currNode = q.front();
+q.pop();
+cout<<"\t"<<currNode->data;
+}// prints parent node
+#pragma omp critical
+{
+if(currNode->left)// push parent's left node in queue
+q.push(currNode->left);
+if(currNode->right)
+q.push(currNode->right);
+}// push parent's right node in queue
+}
+}
+}
+
+
+
+int main(){
+node *root=NULL;
+int data;
+char ans;
+do
+{
+cout<<"\n enter data=>";cin>>data;
+root=insert(root,data);
+cout<<"do you want insert one more node?";cin>>ans;
+}while(ans=='y'||ans=='Y');
+bfs(root);
+return 0;
+}
+
+
+
+
+//*************************************************************InBuilt Input*****************************************************
+#include <iostream>
+#include <vector>
+#include <queue>
+#include <omp.h>
+
+using namespace std;
+
+// Graph class representing the adjacency list
+class Graph {
+    int V;  // Number of vertices
+    vector<vector<int>> adj;  // Adjacency list
+
+public:
+    Graph(int V) : V(V), adj(V) {}
+
+    // Add an edge to the graph
+    void addEdge(int v, int w) {
+        adj[v].push_back(w);
+    }
+
+    // Parallel Depth-First Search
+    void parallelDFS(int startVertex) {
+        vector<bool> visited(V, false);
+        parallelDFSUtil(startVertex, visited);
+    }
+
+    // Parallel DFS utility function
+    void parallelDFSUtil(int v, vector<bool>& visited) {
+        visited[v] = true;
+        cout << v << " ";
+
+        #pragma omp parallel for
+        for (int i = 0; i < adj[v].size(); ++i) {
+            int n = adj[v][i];
+            if (!visited[n])
+                parallelDFSUtil(n, visited);
+        }
+    }
+
+    // Parallel Breadth-First Search
+    void parallelBFS(int startVertex) {
+        vector<bool> visited(V, false);
+        queue<int> q;
+
+        visited[startVertex] = true;
+        q.push(startVertex);
+
+        while (!q.empty()) {
+            int v = q.front();
+            q.pop();
+            cout << v << " ";
+
+            #pragma omp parallel for
+            for (int i = 0; i < adj[v].size(); ++i) {
+                int n = adj[v][i];
+                if (!visited[n]) {
+                    visited[n] = true;
+                    q.push(n);
+                }
+            }
+        }
+    }
+};
+
+int main() {
+    // Create a graph
+    Graph g(7);
+    g.addEdge(0, 1);
+    g.addEdge(0, 2);
+    g.addEdge(1, 3);
+    g.addEdge(1, 4);
+    g.addEdge(2, 5);
+    g.addEdge(2, 6);
+    
+    /*
+        0 -------->1
+        |         / \
+        |        /   \
+        |       /     \
+        v       v       v
+        2 ----> 3       4
+        |      |
+        |      |
+        v      v
+        5      6
+    */
+
+    cout << "Depth-First Search (DFS): ";
+    g.parallelDFS(0);
+    cout << endl;
+
+    cout << "Breadth-First Search (BFS): ";
+    g.parallelBFS(0);
+    cout << endl;
+
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*This C++ code demonstrates parallel implementations of Depth-First Search (DFS) and Breadth-First Search (BFS) algorithms using OpenMP for parallelization. Here's an explanation:
+
+Header Files:
+cpp
+Copy code
+#include <iostream>
+#include <vector>
+#include <queue>
+#include <omp.h>
+iostream: Input/output operations.
+vector: Standard library container used to represent the adjacency list of the graph.
+queue: Standard library container used in BFS for queue data structure.
+omp.h: OpenMP library for parallel programming.
+Namespace:
+cpp
+Copy code
+using namespace std;
+Allows using names from the std namespace without prefixing them with std::.
+Graph Class:
+Represents an undirected graph using an adjacency list.
+Provides methods to add edges and perform parallel DFS and BFS.
+Constructor:
+cpp
+Copy code
+Graph(int V) : V(V), adj(V) {}
+Initializes the number of vertices and creates an empty adjacency list.
+Add Edge Method:
+cpp
+Copy code
+void addEdge(int v, int w)
+Adds an edge between vertices v and w in the graph.
+Parallel Depth-First Search (DFS):
+parallelDFS method initializes the visited array and calls parallelDFSUtil to start DFS from the given start vertex.
+parallelDFSUtil performs DFS recursively in parallel using OpenMP directives.
+Parallel Breadth-First Search (BFS):
+parallelBFS method initializes the visited array and a queue and starts BFS from the given start vertex.
+BFS is implemented iteratively, and the queue is used to store vertices to be visited next.
+BFS is parallelized using OpenMP directives.
+Main Function:
+Creates a graph with 7 vertices and adds edges to represent a simple graph structure.
+Calls parallelDFS and parallelBFS methods from the Graph class to perform parallel DFS and BFS respectively.
+Prints the order of visited vertices during DFS and BFS.
+Concepts:
+OpenMP directives (#pragma omp) are used to parallelize the traversal of adjacent vertices during DFS and BFS.
+Parallelization is achieved by dividing the work among multiple threads using parallel for loops.
+Overall, this code demonstrates how to perform parallel DFS and BFS on a graph using OpenMP, improving the performance of traversal algorithms by utilizing multiple threads for exploration.*/
