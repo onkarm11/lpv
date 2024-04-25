@@ -1,61 +1,75 @@
 #include<iostream>
 #include<stdlib.h>
 #include<omp.h>
+#include<ctime>
 using namespace std;
 
-void bubble(int *, int);
-void swap(int &, int &);
+void sequentialbubble(int a[],int n);
+void parallelbubble(int a[],int n);
+void swap(int &a, int &b);
+
+void sequentialbubble(int a[], int n){
+    int i, j; 
+    for (i = 0; i < n - 1; i++) 
+        // Last i elements are already 
+        // in place 
+        for (j = 0; j < n - i - 1; j++) 
+            if (a[j] > a[j + 1]) 
+                swap(a[j], a[j + 1]); 
+} 
 
 
-void bubble(int *a, int n)
+void parallelbubble(int *a, int n)
 {
-    for(  int i = 0;  i < n;  i++ )
-     {
-   	 int first = i % 2;
-
-   	 #pragma omp parallel for shared(a,first)
-   	 for(  int j = first;  j < n-1;  j += 2  )
-   	   {
-   		 if(  a[ j ]  >  a[ j+1 ]  )
-   		  {
-     			 swap(  a[ j ],  a[ j+1 ]  );
-   		  }
+    for(  int i = 0;  i < n;  i++ ){
+   	    int first = i % 2;
+   	    #pragma omp parallel for shared(a,first)
+   	    for(  int j = first;  j < n-1;  j += 2  ){
+   		   if(  a[ j ]  >  a[ j+1 ]  ){
+   		     swap(  a[ j ],  a[ j+1 ]  );
    		   }
-     }
-}
-
-
-void swap(int &a, int &b)
-{
-
-    int test;
-    test=a;
-    a=b;
-    b=test;
-
-}
-
-int main()
-{
-
-    int *a,n;
-    cout<<"\n enter total no of elements=>";
-    cin>>n;
-    a=new int[n];
-    cout<<"\n enter elements=>";
-    for(int i=0;i<n;i++)
-    {
-   	 cin>>a[i];
+        }
     }
+}
 
-    bubble(a,n);
+void swap(int &a, int &b){
+    int temp;
+    temp = a;
+    a = b;
+    b = temp;
+}
 
-    cout<<"\n sorted array is=>";
-    for(int i=0;i<n;i++)
-    {
-   	 cout<<a[i]<<" ";
+int main(){
+    int *a, n;
+    double start_time, end_time;
+    
+    cout << "enter the number of elements: ";
+    cin >> n;
+    
+    cout<<"enter elements: ";
+    a = new int[n];
+    for(int i=0;i<n;i++){
+        cin >> a[i];
     }
     
-
-return 0;
+    parallelbubble(a,n);
+    
+    cout << "sorted array is: ";
+    for(int i=0;i<n;i++){
+        cout << a[i] << endl;
+    }
+    
+    start_time = clock();
+    sequentialbubble(a,n);
+    end_time = clock();
+    cout << "sequential time: " << end_time-start_time << endl;
+    
+    
+    start_time = clock();
+    parallelbubble(a,n);
+    end_time = clock();
+    cout << "parallel time: " << end_time-start_time << endl;
+    
+    
+    return 0;
 }
